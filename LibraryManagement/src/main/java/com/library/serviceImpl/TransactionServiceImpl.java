@@ -42,7 +42,7 @@ public class TransactionServiceImpl implements TransactionService
 
 	@Autowired
 	private BookDAO bookDao;
-
+	
 	@Autowired
 	private MemberDAO memberDao;
 	
