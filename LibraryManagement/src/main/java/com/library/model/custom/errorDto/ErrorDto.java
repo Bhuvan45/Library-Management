@@ -21,4 +21,10 @@ public class ErrorDto
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
 	}
+	
+//	public ErrorDto(String fieldName, String errorMessage) {
+//		super();
+//		this.fieldName = fieldName;
+//		this.errorMessage = errorMessage;
+//	}
 }

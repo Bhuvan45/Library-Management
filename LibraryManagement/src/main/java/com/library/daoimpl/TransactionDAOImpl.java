@@ -131,20 +131,29 @@ public class TransactionDAOImpl implements TransactionDAO
 		if (transactionSearchDto.getSearchBy() != null && transactionSearchDto.getSearchValue() != null && 
 				! transactionSearchDto.getSearchValue().strip().isEmpty())
 		{
-			if (transactionSearchDto.getSearchBy().equals("memberName"))
+			if (transactionSearchDto.getSearchBy().equalsIgnoreCase("memberName"))
 			{
 				criteria.add(Restrictions.disjunction(Restrictions.ilike("member.firstName", transactionSearchDto.getSearchValue().strip(), MatchMode.ANYWHERE), 
 						Restrictions.ilike("member.lastName", transactionSearchDto.getSearchValue(), MatchMode.ANYWHERE)));
 			}
-			else if (transactionSearchDto.getSearchBy().equals("memberId"))
+			else if (transactionSearchDto.getSearchBy().equalsIgnoreCase("memberId"))
 			{
 				criteria.add(Restrictions.eq("member.memberId", Integer.parseInt(transactionSearchDto.getSearchValue().strip())));
 			}
-			else if (transactionSearchDto.getSearchBy().equals("bookTitle"))
+			else if (transactionSearchDto.getSearchBy().equalsIgnoreCase("title"))
 			{
 				criteria.add(Restrictions.ilike("book.title", transactionSearchDto.getSearchValue().strip(), MatchMode.ANYWHERE));
 			}
 		}
+		else if(transactionSearchDto.getSearchBy() == null && transactionSearchDto.getSearchValue() != null 
+				&& ! transactionSearchDto.getSearchValue().strip().isEmpty())
+		{
+			criteria.add(Restrictions.disjunction(Restrictions.ilike("member.firstName", transactionSearchDto.getSearchValue().strip(), MatchMode.ANYWHERE), 
+					Restrictions.ilike("member.lastName", transactionSearchDto.getSearchValue(), MatchMode.ANYWHERE)));
+			criteria.add(Restrictions.eq("member.memberId", Integer.parseInt(transactionSearchDto.getSearchValue().strip())));
+			criteria.add(Restrictions.ilike("book.title", transactionSearchDto.getSearchValue().strip(), MatchMode.ANYWHERE));
+		}
+		
 		if(transactionSearchDto.getFilter() != null)
 		{
 			if(transactionSearchDto.getFilter().getRentalStatus() != null 

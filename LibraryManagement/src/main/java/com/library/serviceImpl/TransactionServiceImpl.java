@@ -58,12 +58,12 @@ public class TransactionServiceImpl implements TransactionService
 	    boolean overallTransaction = false;
 	    
 		for (BookDetails bookdetails : transactionDto.getBookDetails()) 
-		{			
+		{
 			TransactionResult transactionResult = new TransactionResult();
 			
 			BookMaintenance bookMaintenance = bookDao.getBookById(bookdetails.getBookId());
 			MembershipMaintenance membershipMaintenance = memberDao.getMemberById(transactionDto.getMemberId());
-
+			
 			String errorMessage = ValidateTransaction.validateTransaction(bookdetails, transactionDto, bookMaintenance,
 																					membershipMaintenance);
 			if (errorMessage != null) 
@@ -185,7 +185,7 @@ public class TransactionServiceImpl implements TransactionService
 			{
 				response.setData(topAuthors);
 				response.setRecordsCount(topAuthors.size());
-			} 
+			}
 			else
 			{
 				response.setData("No Transactions Yet");
@@ -260,41 +260,75 @@ public class TransactionServiceImpl implements TransactionService
 	public FilteredResponse getTransactionsBySearchAndFilter(TransactionSearchDto transactionSearchDto)
 	{
 		FilteredResponse filteredResponse = new FilteredResponse();
+		List<ErrorDto> errorList = new ArrayList<ErrorDto>();
+		
+		if(transactionSearchDto.getSearchBy() != null 
+				&& ! transactionSearchDto.getSearchBy().equalsIgnoreCase("memberId")
+				&& ! transactionSearchDto.getSearchBy().equalsIgnoreCase("memberName")
+				&& ! transactionSearchDto.getSearchBy().equalsIgnoreCase("title"))
+		{
+			ErrorDto error = new ErrorDto();
+			error.setFieldName("searchBy");
+			error.setErrorMessage("SearchBy should be memberId or memberName or title");
+			errorList.add(error);
+			filteredResponse.setStatus(WebUtil.STATUS_F);
+			filteredResponse.setData(errorList);
+		}
+		
+		if (transactionSearchDto.getSearchBy() != null 
+		        && transactionSearchDto.getSearchBy().equalsIgnoreCase("memberId") 
+		        && !(transactionSearchDto.getSearchValue() == null 
+		             || transactionSearchDto.getSearchValue().isEmpty() 
+		             || transactionSearchDto.getSearchValue().matches("\\d+")))
+		{
+		    ErrorDto error = new ErrorDto();
+		    error.setFieldName("searchValue");
+		    error.setErrorMessage("Search Value should be a number or null when SearchBy is memberId");
+		    errorList.add(error);
+		    filteredResponse.setStatus(WebUtil.STATUS_F);
+		    filteredResponse.setData(errorList);
+		}
 		
 		if(transactionSearchDto.getFilter() != null)
 		{
+			ErrorDto error = new ErrorDto();
 			if(transactionSearchDto.getFilter().getFromDate() != null 
 					&& transactionSearchDto.getFilter().getToDate() == null)
 			{
+				error.setFieldName("toDate");
+				error.setErrorMessage("To Date should not be null, when From Date is provided.");
+				errorList.add(error);
 				filteredResponse.setStatus(WebUtil.STATUS_F);
-				filteredResponse.setData("End Date should not be null, when Start Date is provided.");
+				filteredResponse.setData(errorList);
 			}
 			
 			else if (transactionSearchDto.getFilter().getFromDate() == null && 
 					transactionSearchDto.getFilter().getToDate() != null)
 			{
-			    filteredResponse.setStatus(WebUtil.STATUS_F);
-			    filteredResponse.setData("Start Date should not be null, when End Date is provided.");
+				error.setFieldName("fromDate");
+				error.setErrorMessage("From Date should not be null, when To Date is provided.");
+				errorList.add(error);
+				filteredResponse.setStatus(WebUtil.STATUS_F);
+				filteredResponse.setData(errorList);
 			}
 			
 			else if (transactionSearchDto.getFilter().getFromDate() != null 
 					&& transactionSearchDto.getFilter().getToDate() != null 
 					&& transactionSearchDto.getFilter().getFromDate().after(transactionSearchDto.getFilter().getToDate()))
 			{
-			    filteredResponse.setStatus(WebUtil.STATUS_F);
-			    filteredResponse.setData("End Date should be greater than or equal to Start Date.");
+				error.setFieldName("toDate");
+				error.setErrorMessage("To Date should be greater than or equal to From Date.");
+				errorList.add(error);
+				filteredResponse.setStatus(WebUtil.STATUS_F);
+				filteredResponse.setData(errorList);
 			}
 		}
 		
-		if(filteredResponse.getStatus() != null && filteredResponse.getStatus().equalsIgnoreCase(WebUtil.STATUS_F))
-		{
-			return filteredResponse;
-		}
-		
-		List<ErrorDto> errorList = new ArrayList<ErrorDto>();
 		FieldValidation.validateStartAndLimitField(transactionSearchDto.getStart(),
 				transactionSearchDto.getLimit(), errorList);
-		if(!errorList.isEmpty())
+		
+		if((filteredResponse.getStatus() != null 
+				&& filteredResponse.getStatus().equalsIgnoreCase(WebUtil.STATUS_F)) || !errorList.isEmpty())
 		{
 			filteredResponse.setStatus(WebUtil.STATUS_F);
 			filteredResponse.setData(errorList);
@@ -313,7 +347,7 @@ public class TransactionServiceImpl implements TransactionService
 		} 
 		else
 		{
-			filteredResponse.setData("No books are in borrowed status");
+			filteredResponse.setData("No Records Found");
 		}
 		filteredResponse.setStatus(WebUtil.STATUS_S);
 		return filteredResponse;
