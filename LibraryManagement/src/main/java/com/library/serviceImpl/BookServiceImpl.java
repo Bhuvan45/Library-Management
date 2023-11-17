@@ -182,15 +182,18 @@ public class BookServiceImpl implements BookService
 				    filteredResponse.setData(errorList);
 				}
 			}
-			if(! bookSearchDto.getSearchBy().equalsIgnoreCase("title") 
-					&& ! bookSearchDto.getSearchBy().equalsIgnoreCase("bookId"))
+			if(bookSearchDto.getSearchBy() != null)
 			{
-				 ErrorDto error = new ErrorDto();
-				 error.setFieldName("searchBy");
-				 error.setErrorMessage("Search By should be BookID or Title");
-				 errorList.add(error);
-				 filteredResponse.setStatus(WebUtil.STATUS_F);
-				 filteredResponse.setData(errorList);
+				if(! bookSearchDto.getSearchBy().equalsIgnoreCase("title") 
+						&& ! bookSearchDto.getSearchBy().equalsIgnoreCase("bookId"))
+				{
+					 ErrorDto error = new ErrorDto();
+					 error.setFieldName("searchBy");
+					 error.setErrorMessage("Search By should be BookID or Title");
+					 errorList.add(error);
+					 filteredResponse.setStatus(WebUtil.STATUS_F);
+					 filteredResponse.setData(errorList);
+				}
 			}
 			
 			FieldValidation.validateStartAndLimitField(bookSearchDto.getStart(),
@@ -223,6 +226,7 @@ public class BookServiceImpl implements BookService
 		{
 			 filteredResponse.setStatus(WebUtil.STATUS_F);
 	         filteredResponse.setData("Error occured while fetching books");
+	         throw e;
 		}
 		return filteredResponse;
 	}

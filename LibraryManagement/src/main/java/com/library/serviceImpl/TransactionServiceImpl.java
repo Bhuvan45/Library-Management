@@ -270,6 +270,13 @@ public class TransactionServiceImpl implements TransactionService
 				filteredResponse.setData("End Date should not be null, when Start Date is provided.");
 			}
 			
+			else if (transactionSearchDto.getFilter().getFromDate() == null && 
+					transactionSearchDto.getFilter().getToDate() != null)
+			{
+			    filteredResponse.setStatus(WebUtil.STATUS_F);
+			    filteredResponse.setData("Start Date should not be null, when End Date is provided.");
+			}
+			
 			else if (transactionSearchDto.getFilter().getFromDate() != null 
 					&& transactionSearchDto.getFilter().getToDate() != null 
 					&& transactionSearchDto.getFilter().getFromDate().after(transactionSearchDto.getFilter().getToDate()))
